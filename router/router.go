@@ -3,6 +3,7 @@ package router
 import (
 	"context"
 	_ "fast-learn/docs"
+	"fast-learn/global"
 	"fmt"
 	"github.com/gin-gonic/gin"
 	"github.com/spf13/viper"
@@ -59,15 +60,18 @@ func InitRouter() {
 		stPort = "8999"
 	}
 
+	// 创建web server
 	server := &http.Server{
 		Addr:    fmt.Sprintf(":%s", stPort),
 		Handler: r,
 	}
 
+	// 启动一个goroutine来开启web服务，避免主线程的信号监听被阻塞
 	go func() {
+		global.Logger.Info(fmt.Sprintf("Start Listen: %s", stPort))
 		if err := server.ListenAndServe(); err != nil && err != http.ErrServerClosed {
-			// TODO: 记录日志
-			fmt.Println(fmt.Sprintf("Start Server Error: %s", err.Error()))
+			//fmt.Println(fmt.Sprintf("Start Server Error: %s", err.Error()))
+			global.Logger.Error(fmt.Sprintf("Start Server Error: %s", err.Error()))
 			return
 		}
 
@@ -80,12 +84,13 @@ func InitRouter() {
 	defer cancelShutdown()
 
 	if err := server.Shutdown(ctx); err != nil {
-		// TODO：记录日志
-		fmt.Println(fmt.Sprintf("Shutdown Server Error: %s", err.Error()))
+		global.Logger.Error(fmt.Sprintf("Shutdown Server Error: %s", err.Error()))
+		//fmt.Println(fmt.Sprintf("Shutdown Server Error: %s", err.Error()))
 		return
 	}
 
-	fmt.Println("Stop Server Success")
+	//fmt.Println("Stop Server Success")
+	global.Logger.Info(fmt.Sprintf("Stop Server Success"))
 }
 
 // 初始化基础模块路由
