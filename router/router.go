@@ -2,9 +2,12 @@ package router
 
 import (
 	"context"
+	_ "fast-learn/docs"
 	"fmt"
 	"github.com/gin-gonic/gin"
 	"github.com/spf13/viper"
+	swaggerFiles "github.com/swaggo/files"
+	ginSwagger "github.com/swaggo/gin-swagger"
 	"net/http"
 	"os/signal"
 	"syscall"
@@ -39,12 +42,18 @@ func InitRouter() {
 	rgPublic := r.Group("/api/v1/public")
 	rgAuth := r.Group("/api/v1")
 
+	// 初始基础平台的路由
 	InitBasePlatformRoutes()
 
+	// 开始注册系统各模块对应的路由信息
 	for _, fnRegistRoute := range gfnRoutes {
 		fnRegistRoute(rgPublic, rgAuth)
 	}
 
+	// 集成swagger
+	r.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
+
+	// 从配置文件中读取并配置web服务配置
 	stPort := viper.GetString("server.port")
 	if stPort == "" {
 		stPort = "8999"
