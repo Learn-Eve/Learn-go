@@ -3,6 +3,8 @@
 1. gin
 2. viper
 3. swagger
+4. zap
+5. gorm
 
 ## 项目开始准备
 1. 准备swagger环境
