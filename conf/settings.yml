@@ -9,6 +9,8 @@ db:
   maxIdleConn: 10 # 最多空闲连接数
   maxOpenConn: 10 # 最多打开连接数
 
+redis:
+  url: localhost:6379
 
 log:
   MaxSize: 1 # 日志文件最大尺寸（M），超限后开始自动分割

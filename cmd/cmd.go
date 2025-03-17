@@ -25,6 +25,14 @@ func Start() {
 		initErr = utils.AppendError(initErr, err)
 	}
 
+	// 初始化redis连接
+	rdClient, err := conf.InitRedis()
+	global.RedisClient = rdClient
+	if err != nil {
+		initErr = utils.AppendError(initErr, err)
+	}
+
+	// 初始化过程中遇到错误的最终处理
 	if initErr != nil {
 		if global.Logger != nil {
 			global.Logger.Error(initErr.Error())
