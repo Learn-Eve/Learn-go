@@ -1,17 +1,21 @@
 package api
 
 import (
+	"fast-learn/service"
 	"fast-learn/service/dto"
+	"fast-learn/utils"
 	"github.com/gin-gonic/gin"
 )
 
 type UserApi struct {
 	BaseApi
+	Service *service.UserService
 }
 
 func NewUserApi() UserApi {
 	return UserApi{
 		BaseApi: NewBaseApi(),
+		Service: service.NewUserService(),
 	}
 }
 
@@ -30,7 +34,20 @@ func (m UserApi) Login(c *gin.Context) {
 		return
 	}
 
+	iUser, err := m.Service.Login(iUserLoginDTO)
+	if err != nil {
+		m.Fail(ResponseJson{
+			Msg: err.Error(),
+		})
+		return
+	}
+
+	token, _ := utils.GenerateToken(iUser.ID, iUser.Name)
+
 	m.Ok(ResponseJson{
-		Data: iUserLoginDTO,
+		Data: gin.H{
+			"token": token,
+			"user":  iUser,
+		},
 	})
 }
