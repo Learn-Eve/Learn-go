@@ -278,3 +278,114 @@ func main() {
     })
 })
 ```
+
+### Gin参数绑定
+Gin框架提供多种绑定方式，包括：Query参数绑定、Form参数帮i的那个、JSON参数绑定
+提供了两种方式：Must Bind和Should Bind
+
+| 功能     | Must Bind | Should Bind     |
+|--------|-----------|-----------------|
+|        | Bind      | ShouldBind      |
+| 绑定JSON | BindJSON  | ShouldBindJSON  |
+| 绑定XML  | BindXML   | ShouldBindXML   |
+| 绑定GET  | BindQuery | ShouldBindQuery |
+| 绑定YAML | BindYAML  | ShouldBindYAML  |
+
+1. 使用示例
+```go
+// 定义待绑定的JSON结构体
+type Param struct {
+	Name  string   `json:"name"`
+	Age   int      `json:"age"`
+	Likes []string `json:"likes"`
+}
+// 绑定提交的Json数据
+func TestBindJson(engine *gin.Engine) {
+	engine.POST("/bindJson", func(context *gin.Context) {
+		var jsonParam Param
+		var err error
+		bindType := context.Query("type")
+		fmt.Println(bindType)
+		if bindType == "1" {
+			err = context.BindJSON(&jsonParam)
+		} else {
+			err = context.ShouldBindJSON(&jsonParam)
+		}
+		if err != nil {
+			context.JSON(500, gin.H{"error": err})
+			return
+		}
+		context.JSON(200, gin.H{"result": jsonParam})
+	})
+}
+```
+2. 自定义参数验证器
+
+(1)创建自定义验证器函数
+```go
+var testValidatorFunc Validator.Func = func(fl validator.FieldLevel) bool {
+    if value, ok := fl.Field().Interface().(string); ok {
+        if value != "" && 0 == strings.Index(value, "a") {
+            return true
+        }
+    }
+	
+    return false
+}
+```
++ `validator.Func` 是一个自定义验证器函数类型，它需要包含自定义验证逻辑的函数体。
++ `validator`.FieldLevel 是一个接口类型，提供了用于获取要验证字段的信息的方法，例如 `FieldName()`、`Field()` 和 `Param()`。
++ `fl.Field()` 返回一个反射值，允许我们获取要验证的字段的值。
++ 使用 `Interface().(string)` 将反射值储存在一个空的 interface{} 变量中，并将其转换为 `string` 类型的变量。
+
+(2) 注册验证器
+```go
+if v, ok := binding.Validator.Engine().(*validator.Validate); ok {
+   v.RegisterValidation("first_is_a", testValidatorFunc)
+}
+```
+(3) 将标签添加到对应的字段上，然后就可以用了
+```go
+type UserLoginDTO struct {
+	Name     string `json:"name" binding:"required,first_is_a"`
+	Password string `json:"password" binding:"required"`
+}
+```
+(4) 自定义错误提示
+
+`validator` 校验返回的结果只有 3 种情况：
++ `nil`：没有错误；
++ `InvalidValidationError`：输入参数错误；
++ `ValidationErrors`：字段违反约束。
+```go
+func formatValidationErrors(err error, target interface{}) error {
+    // 检查是否是验证错误
+    validationErrs, ok := err.(validator.ValidationErrors)
+    if !ok { // 如果不是就返回原始错误信息
+        return err
+    }
+
+    // 获取结构体类型信息
+    structType := reflect.TypeOf(target).Elem()
+
+    var errMsgs []string
+    for _, fieldErr := range validationErrs {
+        // 获取字段定义
+        field, _ := structType.FieldByName(fieldErr.Field())
+
+        // 尝试获取特定错误消息（如first_is_a_err）
+        customErrTag := fieldErr.Tag() + "_err"
+        errMsg := field.Tag.Get(customErrTag)
+
+        // 如果没有特定消息，使用默认格式
+        if errMsg == "" {
+            errMsg = fmt.Sprintf("%s验证失败(%s)", fieldErr.Field(), fieldErr.Tag())
+        }
+
+        errMsgs = append(errMsgs, errMsg)
+    }
+
+    return fmt.Errorf(strings.Join(errMsgs, "; "))
+}
+```
+需要注意的是设置了两个验证规则：`required` 和 `first_is_a`，Go的validator会按顺序执行验证规则，先检查`required`规则，再检查`first_is_a`规则
