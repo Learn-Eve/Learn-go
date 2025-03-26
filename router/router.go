@@ -4,6 +4,7 @@ import (
 	"context"
 	_ "fast-learn/docs"
 	"fast-learn/global"
+	"fast-learn/middleware"
 	"fmt"
 	"github.com/gin-gonic/gin"
 	"github.com/gin-gonic/gin/binding"
@@ -43,6 +44,7 @@ func InitRouter() {
 
 	// 初始化gin框架，并注册相关路由
 	r := gin.Default()
+	r.Use(middleware.Cors())
 	rgPublic := r.Group("/api/v1/public")
 	rgAuth := r.Group("/api/v1")
 

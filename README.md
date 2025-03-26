@@ -389,3 +389,44 @@ func formatValidationErrors(err error, target interface{}) error {
 }
 ```
 需要注意的是设置了两个验证规则：`required` 和 `first_is_a`，Go的validator会按顺序执行验证规则，先检查`required`规则，再检查`first_is_a`规则
+
+### Cors跨域
+1. 环境准备
+```shell
+go get github.com/gin-contrib/cors
+```
+2. 使用
+```go
+func main() {
+    // 创建一个默认的 Gin 实例
+    server := gin.Default()
+
+    // 使用 CORS 中间件处理跨域问题，配置 CORS 参数
+    server.Use(cors.New(cors.Config{
+        // 允许的源地址（CORS中的Access-Control-Allow-Origin）
+        // AllowOrigins: []string{"https://foo.com"},
+        // 允许的 HTTP 方法（CORS中的Access-Control-Allow-Methods）
+        AllowMethods: []string{"PUT", "PATCH"},
+        // 允许的 HTTP 头部（CORS中的Access-Control-Allow-Headers）
+        AllowHeaders: []string{"Origin"},
+        // 暴露的 HTTP 头部（CORS中的Access-Control-Expose-Headers）
+        ExposeHeaders: []string{"Content-Length"},
+        // 是否允许携带身份凭证（CORS中的Access-Control-Allow-Credentials）
+        AllowCredentials: true,
+        // 允许源的自定义判断函数，返回true表示允许，false表示不允许
+        AllowOriginFunc: func(origin string) bool {
+            if strings.HasPrefix(origin, "http://localhost") {
+                // 允许你的开发环境
+                return true
+            }
+            // 允许包含 "yourcompany.com" 的源
+            return strings.Contains(origin, "yourcompany.com")
+        },
+        // 用于缓存预检请求结果的最大时间（CORS中的Access-Control-Max-Age）
+        MaxAge: 12 * time.Hour,
+    }))
+
+    // 启动 Gin 服务器，监听在 0.0.0.0:8080 上
+    server.Run(":8080")
+}
+```
