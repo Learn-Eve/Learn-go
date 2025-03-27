@@ -4,7 +4,6 @@ import (
 	"fast-learn/service"
 	"fast-learn/service/dto"
 	"fast-learn/utils"
-	"fmt"
 	"github.com/gin-gonic/gin"
 )
 
@@ -67,10 +66,10 @@ func (m UserApi) AddUser(c *gin.Context) {
 		return
 	}
 
-	file, _ := c.FormFile("file")
-	stFilePath := fmt.Sprintf("./upload/%s", file.Filename)
-	_ = c.SaveUploadedFile(file, stFilePath)
-	iUserAddDTO.Avatar = stFilePath
+	//file, _ := c.FormFile("file")
+	//stFilePath := fmt.Sprintf("./upload/%s", file.Filename)
+	//_ = c.SaveUploadedFile(file, stFilePath)
+	//iUserAddDTO.Avatar = stFilePath
 
 	err := m.Service.AddUser(&iUserAddDTO)
 	if err != nil {

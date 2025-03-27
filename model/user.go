@@ -1,6 +1,9 @@
 package model
 
-import "gorm.io/gorm"
+import (
+	"fast-learn/utils"
+	"gorm.io/gorm"
+)
 
 type User struct {
 	gorm.Model
@@ -10,4 +13,17 @@ type User struct {
 	Mobile   string `json:"mobile" gorm:"size:11"`
 	Email    string `json:"email" gorm:"size:128"`
 	Password string `json:"-" gorm:"size:128; not null"`
+}
+
+func (m *User) Encrypt() error {
+	stHash, err := utils.Encrypt(m.Password)
+	if err == nil {
+		m.Password = stHash
+	}
+
+	return err
+}
+
+func (m *User) BeforeCreate(orm *gorm.DB) error {
+	return m.Encrypt()
 }

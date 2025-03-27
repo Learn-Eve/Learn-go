@@ -1,6 +1,8 @@
 package dto
 
-import "fast-learn/model"
+import (
+	"fast-learn/model"
+)
 
 type UserLoginDTO struct {
 	Name     string `json:"name" binding:"required,first_is_a" message:"用户名错误" required_err:"用户名不能为空"`
@@ -24,7 +26,8 @@ func (m *UserAddDTO) ConvertToModel(iUser *model.User) {
 	iUser.Avatar = m.Avatar
 	iUser.Mobile = m.Mobile
 	iUser.Email = m.Email
-	iUser.Password = m.Password
+	//stHash, _ := utils.Encrypt(m.Password)
+	//iUser.Password = stHash
 }
 
 // 更新用户相关DTO
