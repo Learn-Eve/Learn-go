@@ -3,7 +3,6 @@ package router
 import (
 	"fast-learn/api"
 	"github.com/gin-gonic/gin"
-	"net/http"
 )
 
 // 用户管理
@@ -24,21 +23,11 @@ func InitUserRoutes() {
 
 		rgAuthUser := rgAuth.Group("user")
 		{
-			rgAuthUser.GET("", func(ctx *gin.Context) {
-				ctx.AbortWithStatusJSON(http.StatusOK, gin.H{
-					"data": []map[string]any{
-						{"id": 1, "name": "zs"},
-						{"id": 2, "name": "ls"},
-					},
-				})
-			})
-
-			rgAuthUser.GET("/:id", func(ctx *gin.Context) {
-				ctx.AbortWithStatusJSON(http.StatusOK, gin.H{
-					"id":   1,
-					"name": "zs",
-				})
-			})
+			rgAuthUser.POST("add", userApi.AddUser)
+			rgAuthUser.GET("/:id", userApi.GetUserById)
+			rgAuthUser.POST("/list", userApi.GetUserList)
+			rgAuthUser.POST("/update", userApi.UpdateUser)
+			rgAuthUser.DELETE("/:id", userApi.DeleteUserById)
 		}
 	})
 }

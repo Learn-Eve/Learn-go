@@ -33,3 +33,31 @@ func (m *UserService) Login(iUserDTO dto.UserLoginDTO) (model.User, error) {
 
 	return iUser, errResult
 }
+
+func (m *UserService) AddUser(iUserAddDTO *dto.UserAddDTO) error {
+	// 判断用户是否存在
+	if m.Dao.CheckUserNameExist(iUserAddDTO.Name) {
+		return errors.New("User Already Exists")
+	}
+	return m.Dao.AddUser(iUserAddDTO)
+}
+
+func (m *UserService) GetUserById(iCommonIDDTO *dto.CommonIDDTO) (model.User, error) {
+	return m.Dao.GetUserByID(iCommonIDDTO.ID)
+}
+
+func (m *UserService) GetUserList(iUserListDTO *dto.UserListDTO) ([]model.User, int64, error) {
+	return m.Dao.GetUserList(iUserListDTO)
+}
+
+func (m *UserService) UpdateUser(iUserUpdateDTO *dto.UserUpdateDTO) error {
+	if iUserUpdateDTO.ID <= 0 {
+		return errors.New("Invalid ID")
+	}
+
+	return m.Dao.UpdateUser(iUserUpdateDTO)
+}
+
+func (m *UserService) DeleteUserById(iCommonIDDTO *dto.CommonIDDTO) error {
+	return m.Dao.DeleteUserById(iCommonIDDTO.ID)
+}
