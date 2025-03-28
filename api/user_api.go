@@ -3,8 +3,8 @@ package api
 import (
 	"fast-learn/service"
 	"fast-learn/service/dto"
-	"fast-learn/utils"
 	"github.com/gin-gonic/gin"
+	"net/http"
 )
 
 const (
@@ -13,6 +13,7 @@ const (
 	ERR_CODE_GET_USER_LIST  = 10013
 	ERR_CODE_UPDATE_USER    = 10014
 	ERR_CODE_DELETE_USER    = 10015
+	ERR_CODE_LOGIN          = 10016
 )
 
 type UserApi struct {
@@ -42,15 +43,20 @@ func (m UserApi) Login(c *gin.Context) {
 		return
 	}
 
-	iUser, err := m.Service.Login(iUserLoginDTO)
+	iUser, token, err := m.Service.Login(iUserLoginDTO)
+	if err == nil {
+		err = service.SetLoginUserTokenToRedis(iUser.ID, token)
+		//global.RedisClient.Set(strconv.Itoa(int(iUser.ID)), iUser)
+	}
+
 	if err != nil {
 		m.Fail(ResponseJson{
-			Msg: err.Error(),
+			Status: http.StatusUnauthorized,
+			Code:   ERR_CODE_LOGIN,
+			Msg:    err.Error(),
 		})
 		return
 	}
-
-	token, _ := utils.GenerateToken(iUser.ID, iUser.Name)
 
 	m.Ok(ResponseJson{
 		Data: gin.H{
