@@ -430,3 +430,42 @@ func main() {
     server.Run(":8080")
 }
 ```
+
+### 密码加密
+> 说来还是惭愧，之前用JAVA的时候也从来没整过什么密码加密，除了用了现有的脚手架以外，
+> 凡是自己从零开始搭建的项目，通通明文存储在数据库里[尴尬]，虽然在这个项目里面就是简简单单的做了个调包侠，
+> 但是总算打通了流程，顺便也和我的工作内容有了一丁点的联系（我怎么什么都记不得...还是不内耗了吧...加油就好）
+1. 环境准备
+```shell
+go get -u golang.org/x/crypto/bcrypt 
+```
+2. 使用
+```go
+func Encrypt(encryptText string) (string, error) { // 加密
+	hashStr, err := bcrypt.GenerateFromPassword([]byte(encryptText), bcrypt.DefaultCost)
+	if err != nil {
+		return "", err
+	}
+	return string(hashStr), err
+}
+ 
+func CompareHashAndPassword(hashPassword, Password string) bool { // 对比
+	err := bcrypt.CompareHashAndPassword([]byte(hashPassword), []byte(Password))
+ 
+	return err == nil
+}
+```
+
+### token验证
+> 感觉并不需要特别的介绍，其实就是需要注意几个点和流程：
+> （1）异常值的判定，比如token为空或者格式不正确
+> （2）token与存储的不同
+> （3）token无法解析
+> （4）token过期
+> （5）token临期但是客户端仍活跃，需要续期
+
+
+## 小结
+断断续续，艰难的学完了，这个艰难并不是说这部分接受的很困难，而是状态确实很不稳定，然后每天都在做心理建设以及算是强迫的让自己继续去focus到当下，
+不过，现在学完啦！！！虽然很皮毛，但是还是要给自己呱唧呱唧，毕竟就是皮毛，也比什么都不做好，保持学习就好，哪怕是基础，但是每天进步一点点，
+今天的我比昨天的我做的好就够了，我的世界里只需要关注自己就好！
