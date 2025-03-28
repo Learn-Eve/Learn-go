@@ -45,8 +45,10 @@ func InitRouter() {
 	// 初始化gin框架，并注册相关路由
 	r := gin.Default()
 	r.Use(middleware.Cors())
+
 	rgPublic := r.Group("/api/v1/public")
 	rgAuth := r.Group("/api/v1")
+	rgAuth.Use(middleware.Auth())
 
 	// 初始基础平台的路由
 	initBasePlatformRoutes()
